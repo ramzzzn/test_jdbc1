@@ -12,38 +12,46 @@ public class Office {
     public static void main(String[] args) {
         addAnnToHrDepartment();
         checkFirstCharOfEmployeeNames();
-        getCountofEmployeesInItDepartment();
+        getCountOfEmployeesInItDepartment();
         System.out.println("Добавляем нового сотрудника с именем 'ann' в отдел IT");
         Service.addEmployee(new Employee(13,"ann",2));
         checkFirstCharOfEmployeeNames();
         addAnnToHrDepartment();
-        getCountofEmployeesInItDepartment();
+        getCountOfEmployeesInItDepartment();
     }
 
     static void addAnnToHrDepartment() {
         try (Connection con = DriverManager.getConnection("jdbc:h2:.\\Office")) {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery("SELECT Id FROM Employee WHERE Name = 'Ann'");
-            PreparedStatement updateStm = con.prepareStatement("UPDATE Employee SET DepartmentId = 3 where Id = ?");
             if (rs.last()) {
-                int rowCount = rs.getRow();
-                if (rowCount == 1) {
-                    int employeeId = rs.getInt("ID");
-                    updateStm.setInt(1, employeeId);
-                    int rowsUpdated = updateStm.executeUpdate();
-                    if (rowsUpdated > 0) {
-                        System.out.println("Ann переведена в отдел кадров.");
-                    } else {
-                        System.out.println("Не удалось обновить запись для Ann.");
-                    }
-                } else {
-                    System.out.println("Найдено несколько сотрудников с именем Ann. Перевод невозможен.");
-                }
+                handleSingleAnnFound(con, rs);
             } else {
                 System.out.println("Сотрудник с именем Ann не найден.");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void handleSingleAnnFound(Connection con, ResultSet rs) throws SQLException {
+        int rowCount = rs.getRow();
+        if (rowCount == 1) {
+            updateAnnDepartment(con, rs);
+        } else {
+            System.out.println("Найдено несколько сотрудников с именем Ann. Перевод невозможен.");
+        }
+    }
+
+    private static void updateAnnDepartment(Connection con, ResultSet rs) throws SQLException {
+        int employeeId = rs.getInt("ID");
+        PreparedStatement updateStm = con.prepareStatement("UPDATE Employee SET DepartmentId = 3 where Id = ?");
+        updateStm.setInt(1, employeeId);
+        int rowsUpdated = updateStm.executeUpdate();
+        if (rowsUpdated > 0) {
+            System.out.println("Ann переведена в отдел кадров.");
+        } else {
+            System.out.println("Не удалось обновить запись для Ann.");
         }
     }
 
@@ -60,7 +68,7 @@ public class Office {
         }
     }
 
-    static void getCountofEmployeesInItDepartment() {
+    static void getCountOfEmployeesInItDepartment() {
         try (Connection con = DriverManager.getConnection("jdbc:h2:.\\Office")) {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery("SELECT COUNT(*) FROM Employee WHERE DepartmentId = 2");
