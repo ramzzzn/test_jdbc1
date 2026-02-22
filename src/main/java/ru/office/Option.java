@@ -1,6 +1,5 @@
-package office;
+package ru.office;
 
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.Scanner;
 
