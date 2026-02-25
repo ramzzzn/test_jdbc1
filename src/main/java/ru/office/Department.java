@@ -1,4 +1,4 @@
-package office;
+package ru.office;
 
 import java.util.Objects;
 
